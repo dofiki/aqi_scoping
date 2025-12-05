@@ -1,18 +1,16 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import { User } from "../model/user.model";
 import { loginSchema, signupSchema } from "../validations/auth.validation";
 import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt.util";
+  loginService,
+  refreshService,
+  signupService,
+  dashboardService,
+} from "../services/user.service";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
     // validating inputs
     const parsed = signupSchema.safeParse(req.body);
-
     if (!parsed.success) {
       res.status(400).json({
         message: "invalid inupt",
@@ -23,36 +21,17 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
     const { username, email, password } = parsed.data;
 
-    // checkign if user already exists or not
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      res.status(400).json({ message: "user already exists" });
-      return;
-    }
-
-    // hash password
-    const saltRounds = 10; // default
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // create new user
-    const newUser = await User.create({
-      username,
-      email,
-      passwordHash: hashedPassword,
-    });
+    // calling service
+    const user = await signupService(username, email, password);
 
     // success response
     res.status(201).json({
       message: "Signup Sucessful",
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-      },
+      user,
     });
-  } catch (error) {
-    console.log("signup error");
-    res.status(500).json({ message: "Internal server error" });
+  } catch (error: any) {
+    console.log("signup error: ", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -71,24 +50,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const { email, password } = parsed.data;
 
-    // checking if user exists or not
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(404).json({ message: "user does not exist" });
-      return;
-    }
-
-    // using instance method
-    const validated = await user.validatePassword(password); // validatePassword is async
-    if (!validated) {
-      res.status(401).json({ message: "not authorized" });
-      return;
-    }
-
-    // generate tokens:
-    // mongoose _id is an ObjectId, converting to string
-    const accessToken = generateAccessToken(user._id.toString());
-    const refreshToken = generateRefreshToken(user._id.toString());
+    // call service
+    const { user, accessToken, refreshToken } = await loginService(
+      email,
+      password
+    );
 
     // sending refresh token
     res.cookie("refreshToken", refreshToken, {
@@ -132,7 +98,7 @@ export const dashboard = async (req: Request, res: Response): Promise<void> => {
     }
 
     // fetch user from DB
-    const user = await User.findById(userId).select("username email");
+    const user = await dashboardService(userId);
 
     if (!user) {
       res.status(404).json({ message: "User not found" });
@@ -149,7 +115,10 @@ export const dashboard = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const refreshtoken = async (req: Request, res: Response): Promise<void> => {
+export const refreshtoken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // refresh token from cookie
     const token = req.cookies.refreshToken;
@@ -159,11 +128,8 @@ export const refreshtoken = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // checks the signature and returns decoded payload
-    const decoded = verifyRefreshToken(token) as any;
-
-    const newAccessToken = generateAccessToken(decoded.id);
-    const newRefreshToken = generateRefreshToken(decoded.id);
+    // calling service
+    const { newRefreshToken, newAccessToken } = await refreshService(token);
 
     // send refresh token through httpOnly cookie
     res.cookie("refreshToken", newRefreshToken, {
