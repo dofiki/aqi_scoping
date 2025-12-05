@@ -6,6 +6,7 @@ export interface IUser extends Document {
   username: string;
   email: string;
   passwordHash: string;
+  trackedLocation: mongoose.Types.ObjectId[];
   validatePassword(password: string): Promise<boolean>;
 }
 
@@ -27,6 +28,10 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
+    trackedLocation: [{
+      type: Schema.Types.ObjectId,
+      ref: "Location"
+    }]
   },
   { timestamps: true }
 );

@@ -5,6 +5,7 @@ import express, { Application } from "express";
 import cookieParser from "cookie-parser";
 
 import userRoutes from "./routes/user.routes";
+import aqiRoutes from "./routes/aqi.routes"
 
 const PORT = process.env.PORT || 5000;
 
@@ -17,6 +18,7 @@ async function start() {
     await connectDB();
 
     app.use("/auth", userRoutes);
+    app.use("/aqi", aqiRoutes);
 
     app.listen(PORT, () =>
       console.log(`Server running at http://localhost:${PORT}`)
