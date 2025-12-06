@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import connectDB from "./config/db";
+import './cron/agenda'
 import express, { Application } from "express";
 import cookieParser from "cookie-parser";
 

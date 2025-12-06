@@ -66,17 +66,17 @@ export const aqiTrackService = async (
 
   console.log(aqiDataObj);
 
-  // creating location if location doesnot exist already
+  // Initial: creating location if location doesnot exist already
   let location = await Location.findOne({ cityName });
   if (!location) {
     location = new Location({ name: cityName, aqiHistory: [] });
   }
 
-  // push aqiDataObj to the location
+  // Initial: push aqiDataObj to the location
   location.aqiHistory.push(aqiDataObj);
   await location.save();
 
-  // attacking location with user
+  // Initial: attaching location with user
   const user = (await User.findById(userId)) as IUser;
   if (user && !user.trackedLocation.includes(location._id)) {
     user.trackedLocation.push(location._id);
