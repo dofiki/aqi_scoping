@@ -1,12 +1,13 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 import bcrypt from "bcrypt";
+import { LocationDoc } from "./location.model";
 
 // interface with instance methods
 export interface IUser extends Document {
   username: string;
   email: string;
   passwordHash: string;
-  trackedLocation: mongoose.Types.ObjectId[];
+  trackedLocation: mongoose.Types.ObjectId[] | LocationDoc[];
   validatePassword(password: string): Promise<boolean>;
 }
 
@@ -28,10 +29,12 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
-    trackedLocation: [{
-      type: Schema.Types.ObjectId,
-      ref: "Location"
-    }]
+    trackedLocation: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Location",
+      },
+    ],
   },
   { timestamps: true }
 );

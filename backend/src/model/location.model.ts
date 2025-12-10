@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 // for ts
-interface AQIData{
+interface AQIData {
   uid: number;
   aqi: string;
   stime: string;
@@ -11,12 +11,13 @@ interface AQIData{
   country: string;
 }
 
-interface LocationDoc extends Document{
-    name: String,
-    aqiHistory: AQIData []
+export interface LocationDoc extends Document {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  aqiHistory: AQIData[];
 }
 
-// schema for each aqi which will be stored in aqiHistory 
+// schema for each aqi which will be stored in aqiHistory
 const aqiDataSchema = new Schema<AQIData>({
   uid: {
     type: Number,
@@ -61,4 +62,4 @@ const locationSchema = new Schema<LocationDoc>({
   },
 });
 
-export const Location = mongoose.model<LocationDoc>("Location", locationSchema)
+export const Location = mongoose.model<LocationDoc>("Location", locationSchema);

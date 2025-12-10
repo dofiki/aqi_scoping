@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import {JwtPayload} from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
 import { verifyAccessToken } from "../utils/jwt.util";
 
 // adding id field to the Jwt payload
-export interface TokenPayload extends JwtPayload{
-  id: string,
+export interface TokenPayload extends JwtPayload {
+  id: string;
 }
 
 // for ts
@@ -24,7 +24,6 @@ export const authMiddleware = (
   // auth header in req body
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    
     res.status(401).json({ message: "missing token" });
     return;
   }

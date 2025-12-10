@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Location } from "../model/location.model";
 import { IUser, User } from "../model/user.model";
 
@@ -27,7 +28,6 @@ export const aqiSearchService = async (
     `https://api.waqi.info/search/?token=${API_TOKEN}&keyword=${location}`
   );
   const result = await response.json();
-  console.log(result);
   /* 
   result: 
     {
@@ -64,10 +64,8 @@ export const aqiTrackService = async (
     country: searchResult.station.country || "Unknown",
   };
 
-  console.log(aqiDataObj);
-
   // Initial: creating location if location doesnot exist already
-  let location = await Location.findOne({ cityName });
+  let location = await Location.findOne({ name: cityName });
   if (!location) {
     location = new Location({ name: cityName, aqiHistory: [] });
   }
@@ -77,15 +75,21 @@ export const aqiTrackService = async (
   await location.save();
 
   // Initial: attaching location with user
-  const user = (await User.findById(userId)) as IUser;
-  if (user && !user.trackedLocation.includes(location._id)) {
-    user.trackedLocation.push(location._id);
-    await user.save();
+  const user = await User.findById(userId);
+  if (user) {
+    // Treat trackedLocation as ObjectId[] when modifying
+    const trackedIds = user.trackedLocation as mongoose.Types.ObjectId[];
+
+    if (!trackedIds.includes(location._id)) {
+      trackedIds.push(location._id);
+      await user.save();
+    }
   }
 
-  return user;
+  return user as IUser;
 };
 
+// skip
 export const trackedAqiService = async (userId: string): Promise<IUser> => {
   // Populate tracked locations with full details including history
   const populatedUser = await User.findById(userId)
@@ -97,4 +101,30 @@ export const trackedAqiService = async (userId: string): Promise<IUser> => {
     .lean();
 
   return populatedUser as IUser;
+};
+
+export const updateAqiRecordService = async (
+  locationId: string,
+  newAqiResult: APIResultStructure
+) => {
+  // save newAqiResult(JSON) into aqiData
+  const aqiData = {
+    uid: newAqiResult.uid,
+    aqi: newAqiResult.aqi,
+    stime: newAqiResult.time.stime,
+    vtime: newAqiResult.time.vtime,
+    stationName: newAqiResult.station.name,
+    geo: newAqiResult.station.geo as [number, number],
+    country: "hawa",
+    //newAqiResult.station.country || "Unknown",
+  };
+
+  // we can directly access each location object using location id
+  const location = await Location.findById(locationId);
+  if (!location) return;
+
+  location.aqiHistory.push(aqiData);
+  await location.save();
+
+  console.log("pushed into the aqiRecord", aqiData);
 };
