@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Local Ubuntu variable font
+export const lexend = localFont({
+  src: "../public/fonts/Lexend-VariableFont_wght.ttf",
+  variable: "--font-lexend",
+  display: "swap",
+  fallback: ["system-ui"],
+  style: "normal",
 });
 
 export const metadata: Metadata = {
@@ -22,10 +21,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={lexend.variable}>
+      <body className="bg-black">
         <Navbar />
         {children}
       </body>
