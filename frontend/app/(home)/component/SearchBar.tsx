@@ -13,13 +13,12 @@ const Searchbar = ({ setQuery }: SearchbarProps) => {
   // if enter is pressed we set the query
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
-      console.log("entered");
       setQuery(input.trim());
     }
   }
 
   return (
-    <div className="flex justify-center w-full mt-10">
+    <div className="flex justify-center w-full mt-10 z-1">
       <div className="relative w-full md:w-200 pl-2 pr-2 flex gap-2">
         <FaSearch className="absolute left-4 top-3 text-gray" />
         <input

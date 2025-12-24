@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Navbar from "@/components/navbar";
+import Navbar from "@/component/NavBar";
 
-// Local Ubuntu variable font
 export const lexend = localFont({
   src: "../public/fonts/Lexend-VariableFont_wght.ttf",
   variable: "--font-lexend",

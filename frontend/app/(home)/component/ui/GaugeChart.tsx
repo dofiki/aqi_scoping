@@ -36,7 +36,7 @@ function GaugePointer() {
 export default function Gaugechart({ aqi, aqiColor }: GaugePropsType) {
   return (
     <GaugeContainer
-      width={200}
+      width={180}
       height={200}
       startAngle={-90}
       endAngle={90}

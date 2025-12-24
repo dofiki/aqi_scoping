@@ -15,7 +15,7 @@ export default function Error({
 
   return (
     <div>
-      <h2>Something went wrong! Please visit About section later :(</h2>
+      <h2>Something went wrong! Please visit later :(</h2>
     </div>
   );
 }

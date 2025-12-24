@@ -1,16 +1,25 @@
 import dotenv from "dotenv";
 dotenv.config();
 import connectDB from "./config/db";
-import './cron/agenda'
+import "./cron/agenda";
 import express, { Application } from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import userRoutes from "./routes/user.routes";
-import aqiRoutes from "./routes/aqi.routes"
+import aqiRoutes from "./routes/aqi.routes";
 
 const PORT = process.env.PORT || 5000;
 
 const app: Application = express();
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 

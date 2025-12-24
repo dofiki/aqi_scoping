@@ -17,7 +17,6 @@ export default function Page() {
           className="md:w-[800px] md:h-[500px] w-full flex flex-col md:flex-row
           shadow-lg shadow-black/40 rounded-lg "
         >
-          {/* LEFT DECORATION */}
           <div
             className="bg-hover w-full h-[100px]
             md:h-[500px] md:w-[500px]
@@ -25,7 +24,6 @@ export default function Page() {
             md:rounded-tr-none md:rounded-bl-0
                         overflow-hidden"
           >
-            {/* SVG */}
             <svg
               id="visual"
               viewBox="0 700 1500 900"
@@ -85,20 +83,17 @@ export default function Page() {
             </svg>
           </div>
 
-          {/* FORM UI */}
           <div
             className="text-[1rem] p-5 md:p-10 w-full
             rounded-bl-lg rounded-br-lg
             md:rounded-bl-none md:rounded-tr-lg
             bg-black border-gray border-r border-t border-b "
           >
-            {/* Title */}
             <h2 className="pb-4 text-xl text-white flex gap-2 items-center">
               <FaUser size={14} />
               Signup
             </h2>
 
-            {/* Email */}
             <div className="mb-3">
               <label className="text-gray-400 text-sm flex items-center gap-1 pl-1">
                 <MdEmail />
@@ -113,7 +108,6 @@ export default function Page() {
               />
             </div>
 
-            {/* Password */}
             <div className="mb-4">
               <label className="text-gray-400 text-sm flex items-center gap-1 pl-1">
                 <RiLockPasswordFill />
@@ -129,7 +123,6 @@ export default function Page() {
               />
             </div>
 
-            {/* Button */}
             <button
               type="button"
               className="bg-hover py-2 text-black rounded-2xl w-full
@@ -140,7 +133,6 @@ export default function Page() {
               Signup
             </button>
 
-            {/* Footer */}
             <p className="text-sm md:text-base text-center mt-3 text-white">
               Already have an account?{" "}
               <span className="underline cursor-pointer hover:text-hover transition-colors">

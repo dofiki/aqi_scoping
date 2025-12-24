@@ -3,9 +3,10 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
 import { MdDateRange } from "react-icons/md";
-import Gaugechart from "../components/ui/gaugechart";
-import map301To100 from "@/utils/map301To100";
-import { getAqiColor, getAqiMessage } from "@/utils/aqiRelated";
+import Gaugechart from "./ui/GaugeChart";
+import map301To100 from "@/lib/utils/map301To100";
+import { getAqiColor, getAqiMessage } from "@/lib/utils/aqiRelated";
+import { FaInfoCircle } from "react-icons/fa";
 
 export interface APIStructure {
   uid: number;
@@ -89,7 +90,7 @@ function Aqiresult({ query }: { query: string }) {
       setGaugeValue(JSON.parse(savedGaugeValue));
     }
   }, []);
-  console.log(gaugeValue);
+
   return (
     <div className="w-full md:w-120 h-150 bg-black rounded-lg border-gray border p-5">
       {loading && (
@@ -105,7 +106,7 @@ function Aqiresult({ query }: { query: string }) {
               <h6 className="text-2xl flex items-center gap-2">
                 {data.station.name}
               </h6>
-              <p className="text-gray-600 flex items-center gap-2 mt-1">
+              <p className="text-white flex items-center gap-2 mt-1">
                 <MdDateRange size={22} />
                 {data.time.stime}
               </p>
@@ -123,7 +124,8 @@ function Aqiresult({ query }: { query: string }) {
                   aqiColor={getAqiColor(Number(data.aqi))}
                 />
               </div>
-              <p className="mt-1 text-xl text-gray-400">
+              <p className="mt-1 text-[1rem] text-gray-500 flex gap-2 justidy-center">
+                <FaInfoCircle size={28} />
                 {getAqiMessage(Number(data.aqi))}
               </p>
             </div>
