@@ -20,10 +20,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                    text-[0.9rem] md:text-[1rem]"
           autoComplete={type === "email" ? "email" : "off"}
         />
-        {error && <p className="text-red-500 text-[8px] pl-2 pt-2">{error}</p>}
+        {error && (
+          <p className="text-red-800 text-[0.8rem] pl-2 pt-2">{error}</p>
+        )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

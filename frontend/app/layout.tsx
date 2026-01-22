@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/component/NavBar";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const lexend = localFont({
   src: "../public/fonts/Lexend-VariableFont_wght.ttf",
@@ -22,8 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={lexend.variable}>
       <body className="bg-black">
-        <Navbar />
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

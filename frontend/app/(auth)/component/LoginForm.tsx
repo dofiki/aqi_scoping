@@ -9,10 +9,12 @@ import z from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import loginSchema from "@/schema/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/useAuth";
 
 type loginSchemaDataType = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
+  const { login, isLoading, error, clearError } = useAuth();
   const {
     register,
     handleSubmit,
@@ -22,9 +24,13 @@ const LoginForm = () => {
     mode: "onBlur",
   });
 
-  const onSubmit: SubmitHandler<loginSchemaDataType> = (data) => {
-    console.log("submitted.");
-    console.log(data);
+  const onSubmit: SubmitHandler<loginSchemaDataType> = async (data) => {
+    try {
+      clearError();
+      await login(data);
+    } catch (err) {
+      console.error("login error:" + err);
+    }
   };
 
   return (
@@ -39,6 +45,12 @@ const LoginForm = () => {
         <FaUser size={14} />
         Login
       </h2>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="mb-3">
         <div className="text-gray-400 text-sm flex items-center gap-1 pl-1">
@@ -66,7 +78,7 @@ const LoginForm = () => {
         />
       </div>
 
-      <Button />
+      <Button buttonMessage={isLoading ? "Logging in..." : "Log in"} />
 
       <p className="text-sm md:text-base text-center mt-3 text-white">
         Don&apos;t an account yet?{" "}

@@ -3,12 +3,19 @@ import { useState } from "react";
 import Link from "next/link";
 import { FaWind } from "react-icons/fa6";
 import { FaRegUserCircle } from "react-icons/fa";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Navbar() {
+  const { isAuthenticated, logout } = useAuth();
   const [isOpen, setOpen] = useState(false);
 
   function handleOpen() {
     setOpen(!isOpen);
+  }
+
+  function handleLogout() {
+    logout();
+    setOpen(false);
   }
 
   return (
@@ -30,30 +37,52 @@ export function Navbar() {
             <Link href="/">Home</Link>
           </li>
           <li className="hover:text-hover">
-            <Link href="/tracks">Tracks</Link>
+            <Link href="/dashboard">Tracks</Link>
           </li>
           <li className="hover:text-hover">
             <Link href="/about">About</Link>
           </li>
-          <li className="bg-hover text-black px-3 py-1 rounded-lg">
-            <Link
-              href="/login"
-              className="group relative flex items-center gap-2 overflow-hidden h-6"
-            >
-              <FaRegUserCircle />
+          {isAuthenticated ? (
+            <li className="bg-red-800 text-white px-3 py-1 rounded-lg cursor-pointer">
+              <button
+                onClick={handleLogout}
+                className="group relative flex items-center gap-2 overflow-hidden h-6 cursor-pointer"
+              >
+                <FaRegUserCircle />
 
-              <span className="relative overflow-hidden h-6">
-                <span
-                  className="flex flex-col transition-transform duration-300 
+                <span className="relative overflow-hidden h-6">
+                  <span
+                    className="flex flex-col transition-transform duration-300 
               ease-in-out group-hover:-translate-y-6"
-                >
-                  <span className="h-6 flex items-center">login</span>
+                  >
+                    <span className="h-6 flex items-center">logout</span>
 
-                  <span className="h-6 flex items-center">login</span>
+                    <span className="h-6 flex items-center">logout</span>
+                  </span>
                 </span>
-              </span>
-            </Link>
-          </li>
+              </button>
+            </li>
+          ) : (
+            <li className="bg-hover text-black px-3 py-1 rounded-lg">
+              <Link
+                href="/login"
+                className="group relative flex items-center gap-2 overflow-hidden h-6"
+              >
+                <FaRegUserCircle />
+
+                <span className="relative overflow-hidden h-6">
+                  <span
+                    className="flex flex-col transition-transform duration-300 
+              ease-in-out group-hover:-translate-y-6"
+                  >
+                    <span className="h-6 flex items-center">login</span>
+
+                    <span className="h-6 flex items-center">login</span>
+                  </span>
+                </span>
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div
@@ -125,7 +154,7 @@ export function Navbar() {
           </li>
           <li>
             <Link
-              href="/tracks"
+              href="/dashboard"
               onClick={() => setOpen(!isOpen)}
               className=" hover:text-hover"
             >
@@ -141,15 +170,23 @@ export function Navbar() {
               About
             </Link>
           </li>
-          <li>
-            <Link
-              href="/login"
-              onClick={() => setOpen(!isOpen)}
-              className=" hover:text-hover"
-            >
-              Login
-            </Link>
-          </li>
+          {isAuthenticated ? (
+            <li>
+              <button onClick={handleLogout} className=" hover:text-hover">
+                Logout
+              </button>
+            </li>
+          ) : (
+            <li>
+              <Link
+                href="/login"
+                onClick={() => setOpen(!isOpen)}
+                className=" hover:text-hover"
+              >
+                Login
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
     </>
