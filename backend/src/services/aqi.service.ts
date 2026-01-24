@@ -21,11 +21,11 @@ export interface APIResultStructure {
 }
 
 export const aqiSearchService = async (
-  location: string
+  location: string,
 ): Promise<APIResultStructure> => {
   // fetch
   const response = await fetch(
-    `https://api.waqi.info/search/?token=${API_TOKEN}&keyword=${location}`
+    `https://api.waqi.info/search/?token=${API_TOKEN}&keyword=${location}`,
   );
   const result = await response.json();
   /* 
@@ -52,7 +52,7 @@ export const aqiSearchService = async (
 export const aqiTrackService = async (
   userId: string,
   cityName: string,
-  searchResult: APIResultStructure
+  searchResult: APIResultStructure,
 ): Promise<IUser> => {
   const aqiDataObj = {
     uid: searchResult.uid,
@@ -89,14 +89,12 @@ export const aqiTrackService = async (
   return user as IUser;
 };
 
-// skip
 export const trackedAqiService = async (userId: string): Promise<IUser> => {
-  // Populate tracked locations with full details including history
   const populatedUser = await User.findById(userId)
     .select("username email trackedLocation")
     .populate({
       path: "trackedLocation",
-      select: "username aqiHistory.uid aqiHistory.stime aqiHistory.aqi",
+      select: "name aqiHistory",
     })
     .lean();
 
@@ -105,7 +103,7 @@ export const trackedAqiService = async (userId: string): Promise<IUser> => {
 
 export const updateAqiRecordService = async (
   locationId: string,
-  newAqiResult: APIResultStructure
+  newAqiResult: APIResultStructure,
 ) => {
   // save newAqiResult(JSON) into aqiData
   const aqiData = {
@@ -115,7 +113,7 @@ export const updateAqiRecordService = async (
     vtime: newAqiResult.time.vtime,
     stationName: newAqiResult.station.name,
     geo: newAqiResult.station.geo as [number, number],
-    country: "hawa",
+    country: newAqiResult.station.country || "unknown",
     //newAqiResult.station.country || "Unknown",
   };
 

@@ -16,7 +16,6 @@ AQI Scoping is a web application that allows users to track the Air Quality Inde
 ## In Progress
 
 - Implement rate limiting.
-- Introduce centralized error handling middleware.
 - Frontend integration with track service.
 - Weekly AQI summary generation
 - Email reporting system
