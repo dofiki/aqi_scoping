@@ -63,3 +63,19 @@ export interface CardProps {
   location: TrackedLocation;
   setSelectedLocation: (location: TrackedLocation) => void;
 }
+
+export interface TrackResponse {
+  message: string;
+  tracked: TrackedUser;
+}
+
+export interface TrackedUser {
+  _id: string;
+  username: string;
+  email: string;
+  passwordHash: string;
+  trackedLocation: string[];
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  __v: number;
+}

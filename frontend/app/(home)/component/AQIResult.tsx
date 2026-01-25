@@ -9,7 +9,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import Gaugechart from "./ui/GaugeChart";
 import map301To100 from "@/lib/utils/map301To100";
 import { getAqiColor, getAqiMessage } from "@/lib/utils/aqiRelated";
-import { searchService } from "@/services/aqi.services";
+import { searchService, trackService } from "@/services/aqi.services";
 import { AQISearchResult } from "@/types/aqi";
 
 function Aqiresult({ query }: { query: string }) {
@@ -17,8 +17,9 @@ function Aqiresult({ query }: { query: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gaugeValue, setGaugeValue] = useState<number>(0);
+  const [track, setTrack] = useState<boolean>(false);
 
-  // Fetch AQI data
+  // Fetch AQI data and track status.
   useEffect(() => {
     if (!query) return;
 
@@ -72,6 +73,14 @@ function Aqiresult({ query }: { query: string }) {
     }
   }, []);
 
+  // handle track button
+  const handleTrack = async () => {
+    const trackStatus = await trackService(data?.station.name || " ");
+    if (trackStatus === "successfully tracked") {
+      setTrack(true);
+    } else setTrack(false);
+  };
+
   return (
     <div className="w-full md:w-120 h-150 bg-black rounded-lg border-gray border p-5">
       {loading && (
@@ -120,9 +129,14 @@ function Aqiresult({ query }: { query: string }) {
             </div>
 
             <div>
-              <button className="mt-3 lg:mt-0 lg:ml-3 bg-white rounded-lg text-black px-3 py-2 flex items-center gap-2 hover:bg-gray-300 transition">
+              <button
+                className={`mt-3 lg:mt-0 lg:ml-3  rounded-lg 
+               text-black px-3 py-2 flex items-center gap-2 hover:bg-gray-300 transition
+               ${track ? "bg-green-800 text-white" : "bg-white text-black"}`}
+                onClick={handleTrack}
+              >
                 <IoMdAddCircle size={22} />
-                Track
+                {track ? "Tracked" : "Track"}
               </button>
             </div>
           </div>

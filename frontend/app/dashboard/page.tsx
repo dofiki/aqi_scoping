@@ -80,7 +80,7 @@ const Page = () => {
         )}
 
         {trackedData?.trackedLocation?.length ? (
-          <div className="flex flex-col md:flex-row gap-5 ">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {trackedData.trackedLocation.map((location) => {
               const latestAQI =
                 location.aqiHistory?.[location.aqiHistory.length - 1] ?? null;
