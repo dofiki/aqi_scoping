@@ -3,7 +3,27 @@ import {
   aqiSearchService,
   aqiTrackService,
   trackedAqiService,
+  isTrackingService,
 } from "../services/aqi.service";
+
+export const isTracking = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const locationName = req.query.location as string;
+    const userId = req.user?.id; // from auth middleware
+
+    const isTrackingStatus = await isTrackingService(userId, locationName);
+
+    res.status(200).json({
+      message: "isTrackingStatus successfully received",
+      isTrackingStatus,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
 
 export const aqiSearch = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -39,7 +59,7 @@ export const aqiTrack = async (req: Request, res: Response): Promise<void> => {
 
 export const trackedAqi = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const userId = req.user?.id as string;

@@ -79,3 +79,8 @@ export interface TrackedUser {
   updatedAt: string; // ISO date string
   __v: number;
 }
+
+interface isTrackingResponse {
+  message: string;
+  isTrackingStatus: boolean;
+}

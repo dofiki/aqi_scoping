@@ -126,3 +126,21 @@ export const updateAqiRecordService = async (
 
   console.log("pushed into the aqiRecord", aqiData);
 };
+
+export const isTrackingService = async (
+  userId: string | undefined,
+  locationName: string,
+): Promise<boolean> => {
+  // 1. Find location by name
+  const location = await Location.findOne({ name: locationName }).select("_id");
+
+  if (!location) return false; // location doesn't exist at all
+
+  // 2. Check if user is tracking this location
+  const exists = await User.exists({
+    _id: userId,
+    trackedLocation: location._id,
+  });
+
+  return !!exists;
+};

@@ -3,6 +3,7 @@ import {
   AQISearchResponse,
   AQITrackedResponse,
   TrackResponse,
+  isTrackingResponse,
 } from "@/types/aqi";
 
 export const searchApi = async (
@@ -23,6 +24,16 @@ export const trackedApi = async (): Promise<AQITrackedResponse> => {
 export const trackApi = async (location: string): Promise<TrackResponse> => {
   const response = await api.get<TrackResponse>("/aqi/track", {
     params: { location },
+  });
+  return response.data;
+};
+
+export const isTrackingApi = async (
+  location: string,
+): Promise<isTrackingResponse> => {
+  const response = await api.get<isTrackingResponse>("/aqi/istracking", {
+    params: { location },
+    withCredentials: true,
   });
   return response.data;
 };

@@ -5,21 +5,30 @@ import { useEffect, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
 import { MdDateRange } from "react-icons/md";
 import { FaInfoCircle } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 import Gaugechart from "./ui/GaugeChart";
 import map301To100 from "@/lib/utils/map301To100";
 import { getAqiColor, getAqiMessage } from "@/lib/utils/aqiRelated";
-import { searchService, trackService } from "@/services/aqi.services";
+import {
+  isTrackingService,
+  searchService,
+  trackService,
+} from "@/services/aqi.services";
 import { AQISearchResult } from "@/types/aqi";
+import { useAuth } from "@/hooks/useAuth";
 
 function Aqiresult({ query }: { query: string }) {
+  const { user } = useAuth();
+  const router = useRouter();
+
   const [data, setData] = useState<AQISearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gaugeValue, setGaugeValue] = useState<number>(0);
   const [track, setTrack] = useState<boolean>(false);
 
-  // Fetch AQI data and track status.
+  // Fetch AQI data + tracking status
   useEffect(() => {
     if (!query) return;
 
@@ -29,11 +38,20 @@ function Aqiresult({ query }: { query: string }) {
       setData(null);
 
       try {
+        // 1. Fetch AQI
         const result = await searchService(query);
         setData(result);
 
         const mappedValue = map301To100(Number(result.aqi));
         setGaugeValue(mappedValue);
+
+        // 2. Fetch tracking status (only if logged in)
+        if (user) {
+          const trackingStatus = await isTrackingService(result.station.name);
+          setTrack(trackingStatus);
+        } else {
+          setTrack(false);
+        }
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(
@@ -52,7 +70,7 @@ function Aqiresult({ query }: { query: string }) {
     };
 
     fetchData();
-  }, [query]);
+  }, [query, user]);
 
   // Persist data
   useEffect(() => {
@@ -73,12 +91,24 @@ function Aqiresult({ query }: { query: string }) {
     }
   }, []);
 
-  // handle track button
+  // Track handler (redirect if not logged in)
   const handleTrack = async () => {
-    const trackStatus = await trackService(data?.station.name || " ");
-    if (trackStatus === "successfully tracked") {
-      setTrack(true);
-    } else setTrack(false);
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (!data || track) return;
+
+    try {
+      const result = await trackService(data.station.name);
+
+      if (result === "successfully tracked") {
+        setTrack(true);
+      }
+    } catch (error) {
+      console.error("Tracking failed:", error);
+    }
   };
 
   return (
@@ -130,9 +160,12 @@ function Aqiresult({ query }: { query: string }) {
 
             <div>
               <button
-                className={`mt-3 lg:mt-0 lg:ml-3  rounded-lg 
-               text-black px-3 py-2 flex items-center gap-2 hover:bg-gray-300 transition
-               ${track ? "bg-green-800 text-white" : "bg-white text-black"}`}
+                className={`mt-3 lg:mt-0 lg:ml-3 rounded-lg px-3 py-2 flex items-center gap-2 transition
+                  ${
+                    track
+                      ? "bg-green-800 text-white cursor-not-allowed"
+                      : "bg-white text-black hover:bg-gray-300"
+                  } ${!user ? "opacity-70" : ""}`}
                 onClick={handleTrack}
               >
                 <IoMdAddCircle size={22} />

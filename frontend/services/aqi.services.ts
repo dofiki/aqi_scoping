@@ -1,4 +1,9 @@
-import { searchApi, trackApi, trackedApi } from "@/lib/api/aqi.api";
+import {
+  isTrackingApi,
+  searchApi,
+  trackApi,
+  trackedApi,
+} from "@/lib/api/aqi.api";
 import { AQISearchResult, TrackedUser } from "@/types/aqi";
 
 export const searchService = async (
@@ -16,4 +21,9 @@ export const trackedService = async (): Promise<TrackedUser> => {
 export const trackService = async (location: string): Promise<string> => {
   const response = await trackApi(location);
   return response.message;
+};
+
+export const isTrackingService = async (location: string): Promise<boolean> => {
+  const response = await isTrackingApi(location);
+  return response.isTrackingStatus;
 };
