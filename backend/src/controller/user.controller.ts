@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
-import { loginSchema, signupSchema } from "../validations/auth.validation";
+import {
+  loginSchema,
+  otpSchema,
+  signupSchema,
+} from "../validations/auth.validation";
 import {
   loginService,
-  refreshService,
   signupService,
+  verifyemailService,
+  refreshService,
   dashboardService,
 } from "../services/user.service";
 
@@ -21,16 +26,59 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
     const { username, email, password } = parsed.data;
 
-    // calling service
+    // calling signup service
     const user = await signupService(username, email, password);
 
-    // success response
     res.status(201).json({
-      message: "Signup Sucessful",
-      user,
+      message: "Signup successful. Please verify your email.",
+      userId: user.userId,
     });
   } catch (error: any) {
     console.log("signup error: ", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const verifyemail = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const parsed = otpSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        message: "invalid input",
+        errors: parsed.error,
+      });
+      return;
+    }
+
+    const { userId, otp } = parsed.data;
+
+    const { user, accessToken, refreshToken } = await verifyemailService(
+      userId,
+      otp,
+    );
+
+    // send refresh token via cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // USER IS NOW LOGGED IN
+    res.status(200).json({
+      message: "Email verified successfully",
+      accessToken,
+      user: { 
+        id: user._id,
+        email: user.email,
+        username: user.username,
+      },
+    });
+  } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
@@ -53,7 +101,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // call service
     const { user, accessToken, refreshToken } = await loginService(
       email,
-      password
+      password,
     );
 
     // sending refresh token
@@ -117,7 +165,7 @@ export const dashboard = async (req: Request, res: Response): Promise<void> => {
 
 export const refreshtoken = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // refresh token from cookie

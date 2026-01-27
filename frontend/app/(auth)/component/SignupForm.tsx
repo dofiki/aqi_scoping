@@ -30,9 +30,11 @@ const SignupForm = () => {
   const onSubmit: SubmitHandler<signupSchemaataType> = async (data) => {
     try {
       clearError();
+
+      // Call signup service
       await signup(data);
     } catch (err) {
-      console.error("signup error:" + err);
+      console.error("signup error:", err);
     }
   };
 

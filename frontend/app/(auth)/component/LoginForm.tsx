@@ -7,8 +7,8 @@ import Input from "@/app/(auth)/component/ui/Input";
 import Button from "@/app/(auth)/component/ui/Button";
 import z from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
-import loginSchema from "@/schema/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import loginSchema from "@/schema/loginSchema";
 import { useAuth } from "@/hooks/useAuth";
 
 type loginSchemaDataType = z.infer<typeof loginSchema>;

@@ -1,9 +1,14 @@
 "use client";
 
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { SignupPayload, LoginPayload } from "@/types/auth";
+import { SignupPayload, LoginPayload, VerifyEmailPayload } from "@/types/auth";
 import { useRouter } from "next/navigation";
-import { getDashboardApi, loginApi, signupApi } from "@/lib/api/auth.api";
+import {
+  getDashboardApi,
+  loginApi,
+  verifyEmailApi,
+  signupApi,
+} from "@/lib/api/auth.api";
 
 interface User {
   id: string;
@@ -17,6 +22,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (data: LoginPayload) => Promise<void>;
   signup: (data: SignupPayload) => Promise<void>;
+  verifyEmail: (data: VerifyEmailPayload) => Promise<void>;
   logout: () => void;
   error: string | null;
   clearError: () => void;
@@ -110,10 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setError(null);
       setIsLoading(true);
-      // signup
-      await signupApi(data);
-      // After signup, automatically log in
-      await login({ email: data.email, password: data.password });
+
+      // Call backend signup API
+      const res = await signupApi(data); // res = { message, userId }
+
+      // Store userId for OTP verification
+      localStorage.setItem("verifyUserId", res.userId);
+
+      // Redirect to OTP verification page
+      router.push("/verify-email");
     } catch (err) {
       const error = err as Error & {
         response?: { data?: { message?: string } };
@@ -126,6 +137,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     }
   };
+
+  // verify email
+  const verifyEmail = async (data: VerifyEmailPayload) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      const res = await verifyEmailApi(data);
+
+      localStorage.setItem("accessToken", res.accessToken);
+      localStorage.removeItem("verifyUserId");
+
+      setUser({
+        id: res.user.id,
+        username: res.user.username,
+        email: res.user.email,
+      });
+
+      router.push("/dashboard");
+    } catch (err) {
+      const error = err as Error & {
+        response?: { data?: { message?: string } };
+      };
+      const errorMessage =
+        error.response?.data?.message || "Signup failed. Please try again.";
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // logout
   const logout = () => {
     localStorage.removeItem("accessToken");
@@ -140,6 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     signup,
     logout,
+    verifyEmail,
     error,
     clearError,
   };

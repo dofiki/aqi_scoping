@@ -6,11 +6,7 @@ export interface SignupPayload {
 
 export interface SignupResponse {
   message: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-  };
+  userId: string;
 }
 
 export interface LoginPayload {
@@ -34,4 +30,19 @@ export interface DashboardResponse {
 
 export interface RefreshTokenResponse {
   accessToken: string;
+}
+
+export interface VerifyEmailPayload {
+  userId: string;
+  otp: string;
+}
+
+export interface VerifyEmailResponse {
+  message: string;
+  accessToken: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
 }

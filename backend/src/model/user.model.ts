@@ -1,12 +1,19 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import bcrypt from "bcrypt";
 import { LocationDoc } from "./location.model";
+import { string } from "zod";
 
 // interface with instance methods
 export interface IUser extends Document {
   username: string;
   email: string;
   passwordHash: string;
+  isEmailVerified: boolean;
+  emailOtp?: {
+    code: string;
+    expiresAt: Date;
+    attempts: number;
+  };
   trackedLocation: mongoose.Types.ObjectId[] | LocationDoc[];
   validatePassword(password: string): Promise<boolean>;
 }
@@ -29,6 +36,16 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailOtp: {
+      code: string,
+      expiresAt: Date,
+      attemps: Number,
+    },
     trackedLocation: [
       {
         type: Schema.Types.ObjectId,
@@ -36,12 +53,12 @@ const userSchema = new Schema<IUser>(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // instance methods
 userSchema.methods.validatePassword = async function (
-  passwrod: string
+  passwrod: string,
 ): Promise<boolean> {
   return bcrypt.compare(passwrod, this.passwordHash);
 };

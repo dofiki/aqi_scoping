@@ -5,31 +5,95 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt.util";
+import { generateOtp } from "../utils/otp.util";
+import { sendOtpEmail } from "../utils/mail.util";
 
 export const signupService = async (
   username: string,
   email: string,
-  password: string
+  password: string,
 ) => {
-  // checkign if user already exists or not
-  const userExists = await User.findOne({ email });
-  if (userExists) throw new Error("Invalid credentials");
+  // Check if user already exists
+  let user = await User.findOne({ email });
 
-  // hash password
-  const saltRounds = 10; // default
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  if (user && user.isEmailVerified) {
+    throw new Error("Email already registered");
+  }
 
-  // create new user
-  const newUser = await User.create({
-    username,
-    email,
-    passwordHash: hashedPassword,
-  });
+  // Hash password if new user
+  if (!user) {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    user = await User.create({
+      username,
+      email,
+      passwordHash: hashedPassword,
+      isEmailVerified: false,
+    });
+  }
+
+  // Generate OTP
+  const otp = generateOtp();
+
+  // Save OTP to user
+  user.emailOtp = {
+    code: otp,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    attempts: 0,
+  };
+
+  await user.save();
+
+  // Send OTP email
+  await sendOtpEmail(user.email, otp);
+
+  // Return userId for frontend OTP verification
+  return {
+    message: "OTP sent to email",
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+    isEmailVerified: user.isEmailVerified,
+  };
+};
+
+export const verifyemailService = async (userId: string, otp: string) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  if (!user.emailOtp) throw new Error("OTP not found");
+
+  // OTP expired
+  if (user.emailOtp.expiresAt < new Date()) {
+    throw new Error("OTP expired");
+  }
+
+  // Too many attempts
+  if (user.emailOtp.attempts >= 5) {
+    throw new Error("Too many invalid attempts. Please signup again.");
+  }
+
+  // Wrong OTP
+  if (String(user.emailOtp.code) !== String(otp)) {
+    user.emailOtp.attempts += 1;
+    await user.save();
+    throw new Error("Invalid OTP");
+  }
+
+  // Correct OTP
+  user.isEmailVerified = true;
+  user.emailOtp = undefined;
+  await user.save();
+
+  // FOR AUTO LOGIN
+  const accessToken = generateAccessToken(user._id.toString());
+  const refreshToken = generateRefreshToken(user._id.toString());
 
   return {
-    id: newUser._id,
-    username: newUser.username,
-    email: newUser.email,
+    user,
+    accessToken,
+    refreshToken,
   };
 };
 
