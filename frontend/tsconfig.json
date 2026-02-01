@@ -29,7 +29,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "app/(home)/component/AQIRecommendation.tsx"
+    "src/app/(home)/component/Recommendation/AQIRecommendation.tsx"
   ],
   "exclude": ["node_modules"]
 }

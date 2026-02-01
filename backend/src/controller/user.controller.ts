@@ -72,7 +72,7 @@ export const verifyemail = async (
     res.status(200).json({
       message: "Email verified successfully",
       accessToken,
-      user: { 
+      user: {
         id: user._id,
         email: user.email,
         username: user.username,
