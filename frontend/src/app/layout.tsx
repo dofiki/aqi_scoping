@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/src/component/NavBar";
 import { AuthProvider } from "@/src/context/AuthContext";
+import Footer from "../component/Footer/Footer";
 
 export const lexend = localFont({
   src: "../../public/fonts/Lexend-VariableFont_wght.ttf",
@@ -26,6 +27,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           {children}
+          <Footer />
         </AuthProvider>
       </body>
     </html>

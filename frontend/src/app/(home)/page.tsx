@@ -5,7 +5,6 @@ import WhyAQIMatters from "./component/Why/WhyAqiMatters";
 import HowItHelps from "./component/How/HowitHepls";
 import EmailNotificationPreview from "./component/Email/EmailNotificationPreview";
 import CTASection from "./component/CTA/CtaSection";
-import Footer from "./component/Footer/Footer";
 
 export default function Page() {
   const [query, setQuery] = useState("");
@@ -19,7 +18,6 @@ export default function Page() {
           <HowItHelps />
           <EmailNotificationPreview />
           <CTASection />
-          <Footer />
         </div>
       </main>
     </div>
