@@ -1,9 +1,11 @@
+// AQI Time
 export interface AQITime {
   stime: string;
   vtime: number;
   tz: string;
 }
 
+// AQI Station
 export interface AQIStation {
   name: string;
   geo: [number, number];
@@ -11,6 +13,7 @@ export interface AQIStation {
   country?: string | null;
 }
 
+// AQI Search Result
 export interface AQISearchResult {
   uid: number;
   aqi: string;
@@ -18,69 +21,85 @@ export interface AQISearchResult {
   station: AQIStation;
 }
 
+// AQI Search Response
 export interface AQISearchResponse {
   message: string;
   result: AQISearchResult;
 }
 
-// AQI Tracked History
-
+// AQI History Item (used in location's aqiHistory array)
 export interface AQIHistoryItem {
   uid: number;
   aqi: string;
   stime: string;
+  vtime: number;
+  stationName: string;
+  geo: [number, number];
+  country: string;
 }
 
-// Tracked Location
+// Alias for consistency with your Card component
+export type AQIData = AQIHistoryItem;
 
+// Tracked Location
 export interface TrackedLocation {
   _id: string;
   name: string;
   aqiHistory: AQIHistoryItem[];
 }
 
-// Tracked User (Expanded)
+// Alias for consistency with your Card component
+export type Location = TrackedLocation;
 
+// Tracked User (for /aqi/tracked response)
 export interface TrackedUser {
   _id: string;
   username: string;
   email: string;
-  trackedLocation: TrackedLocation[];
+  trackedLocation: TrackedLocation[]; // Populated locations
 }
 
-// /aqi/tracked Response
+// Track Response (for /aqi/track response)
+export interface TrackResponse {
+  message: string;
+  tracked: {
+    _id: string;
+    username: string;
+    email: string;
+    passwordHash: string;
+    trackedLocation: string[]; // Just ObjectId strings, not populated
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+}
 
+// Is Tracking Response
+export interface IsTrackingResponse {
+  message: string;
+  isTrackingStatus: boolean;
+}
+
+// Untrack Response
+export interface UntrackResponse {
+  message: string;
+  locationId: string;
+}
+
+// AQI Tracked Response
 export interface AQITrackedResponse {
   message: string;
   tracked: TrackedUser;
 }
 
+// Card Props
 export interface CardProps {
+  index: number;
   locationName: string;
   latestAQI: AQIHistoryItem | null;
   aqiValue: number;
   aqiHistoryLength: number;
   location: TrackedLocation;
   setSelectedLocation: (location: TrackedLocation) => void;
-}
-
-export interface TrackResponse {
-  message: string;
-  tracked: TrackedUser;
-}
-
-export interface TrackedUser {
-  _id: string;
-  username: string;
-  email: string;
-  passwordHash: string;
-  trackedLocation: string[];
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-  __v: number;
-}
-
-interface isTrackingResponse {
-  message: string;
-  isTrackingStatus: boolean;
+  onUntrack?: (locationId: string) => void;
 }

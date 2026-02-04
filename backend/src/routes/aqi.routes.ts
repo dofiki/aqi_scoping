@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   aqiSearch,
   aqiTrack,
+  untrackAqi,
   trackedAqi,
   isTracking,
 } from "../controller/aqi.controller";
@@ -13,6 +14,8 @@ const router = Router();
 router.get("/search", aqiSearch);
 // aqi/track?location=kathmandu
 router.get("/track", authMiddleware, aqiTrack);
+// aqi/untrack/6955asjfpoawe6awf5
+router.delete("/untrack/:locationId", authMiddleware, untrackAqi);
 // aqi/tracked -> list the records
 router.get("/tracked", authMiddleware, trackedAqi);
 // aqi/istracking?location=kathmandu

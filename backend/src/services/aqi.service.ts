@@ -89,6 +89,47 @@ export const aqiTrackService = async (
   return user as IUser;
 };
 
+export const aqiUntrackService = async (
+  userId: string,
+  locationId: string,
+): Promise<boolean> => {
+  try {
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(locationId)) {
+      throw new Error("Invalid location ID format");
+    }
+
+    // Check if location exists
+    const location = await Location.findById(locationId);
+    if (!location) {
+      throw new Error("Location not found");
+    }
+
+    // Remove location from user's trackedLocation array
+    const result = await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { trackedLocation: new mongoose.Types.ObjectId(locationId) },
+      },
+      { new: true }, // Return updated document
+    );
+
+    if (!result) {
+      throw new Error("User not found");
+    }
+
+    // Check if the location was actually removed
+    const wasTracked = !result.trackedLocation.some(
+      (id) => id.toString() === locationId,
+    );
+
+    return wasTracked;
+  } catch (error) {
+    console.error("Error in aqiUntrackService:", error);
+    throw error;
+  }
+};
+
 export const trackedAqiService = async (userId: string): Promise<IUser> => {
   const populatedUser = await User.findById(userId)
     .select("username email trackedLocation")

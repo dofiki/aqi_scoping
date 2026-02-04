@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   aqiSearchService,
   aqiTrackService,
+  aqiUntrackService,
   trackedAqiService,
   isTrackingService,
 } from "../services/aqi.service";
@@ -54,6 +55,44 @@ export const aqiTrack = async (req: Request, res: Response): Promise<void> => {
     // scheduled trackingService() > where to implement this?
   } catch (error) {
     res.status(500).json({ message: error });
+  }
+};
+
+// aqi untrack. id is sent. search locaton with id if it exits then remove (do not delete) the record
+// from the user aqi history....
+
+export const untrackAqi = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const userId = req.user?.id as string; // Get from auth middleware
+    const { locationId } = req.params; // Get location ID from URL params
+
+    if (!locationId) {
+      res.status(400).json({ message: "Location ID is required" });
+      return;
+    }
+
+    // Call untrack service
+    const result = await aqiUntrackService(userId, locationId);
+
+    if (!result) {
+      res
+        .status(404)
+        .json({ message: "Location not found in tracked locations" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Successfully untracked location",
+      locationId,
+    });
+  } catch (error) {
+    console.error("Error untracking AQI:", error);
+    res.status(500).json({
+      message: error instanceof Error ? error.message : "Internal server error",
+    });
   }
 };
 

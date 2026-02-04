@@ -1,77 +1,70 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ProtectedRoute } from "@/src/component/ProtectedRoute";
 import { useAuth } from "@/src/hooks/useAuth";
 import { trackedApi } from "@/src/lib/api/aqi.api";
 import { TrackedUser, TrackedLocation } from "@/src/types/aqi";
-import { FaMapMarkerAlt, FaSyncAlt, FaExclamationCircle } from "react-icons/fa";
+import { FaMapMarkerAlt, FaExclamationCircle } from "react-icons/fa";
 import { HistoryModal } from "./component/History";
 import Card from "./component/Card";
-import Footer from "../../component/Footer/Footer";
 
 const Page = () => {
   const { user } = useAuth();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [trackedData, setTrackedData] = useState<TrackedUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] =
     useState<TrackedLocation | null>(null);
 
-  const loadTrackedLocations = async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setIsRefreshing(true);
-      }
-      setError(null);
-      const data = await trackedApi();
-      setTrackedData(data);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load tracked locations";
-      setError(errorMessage);
-      console.error("Error loading tracked locations:", err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   useEffect(() => {
+    const loadTrackedLocations = async () => {
+      try {
+        setError(null);
+        const data = await trackedApi();
+        setTrackedData(data);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Failed to load tracked locations";
+        setError(errorMessage);
+        console.error("Error loading tracked locations:", err);
+      }
+    };
+
     loadTrackedLocations();
   }, []);
 
-  const handleRefresh = () => {
-    loadTrackedLocations(true);
+  // Add handleUntrack function
+  const handleUntrack = (locationId: string) => {
+    // Remove the location from the state immediately (optimistic update)
+    setTrackedData((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        trackedLocation: prev.trackedLocation.filter(
+          (loc) => loc._id !== locationId,
+        ),
+      };
+    });
+
+    // Optional: Close the history modal if the untracked location is currently selected
+    if (selectedLocation?._id === locationId) {
+      setSelectedLocation(null);
+    }
   };
 
   return (
     <ProtectedRoute>
-      <div className="max-w-8xl px-4 mx-auto space-y-12 ">
-        <div className="px-4 md:px-55 text-white pt-20">
+      <div className="max-w-8xl px-4 mx-auto space-y-12">
+        <div className="px-4 md:px-55 text-white md:pt-20 pt-5">
           <div className="h-10 w-full"></div>
-          <div className="flex items-center justify-between mb-8 pt-5">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">
-                Tracks : AQI Dashboard
-              </h1>
-              <p className="text-gray-400 text-xl">
-                Welcome, {user?.username || "User"}
-              </p>
-            </div>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="bg-gray-800 hover:bg-gray-700 disabled:bg-gray-800 
-              disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium transition-colors 
-              flex items-center gap-2 cursor-pointer"
-            >
-              <FaSyncAlt
-                className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`}
-              />
-              <span className="hidden md:flex">
-                {isRefreshing ? "Refreshing..." : "Refresh"}
-              </span>
-            </button>
+          <div className="mb-8 pt-5">
+            <h1 className="text-3xl font-bold mb-2">Tracks : AQI Dashboard</h1>
+            <p className="text-gray-400 text-xl">
+              Welcome, {user?.username || "User"}
+            </p>
           </div>
 
           {error && (
@@ -84,27 +77,52 @@ const Page = () => {
             </div>
           )}
 
+          {/* Desktop Header */}
           {trackedData?.trackedLocation?.length ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {trackedData.trackedLocation.map((location) => {
-                const latestAQI =
-                  location.aqiHistory?.[location.aqiHistory.length - 1] ?? null;
+            <>
+              <div
+                className="hidden lg:grid grid-cols-12 gap-4 px-6 py-6 bg-gray-800 border-b
+               border-gray-700 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1"
+              >
+                <div className="col-span-1">#</div>
+                <div className="col-span-3">Location</div>
+                <div className="col-span-1">AQI</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-2">Last Updated</div>
+                <div className="col-span-1">Records</div>
+                <div className="col-span-2 text-right">Actions</div>
+              </div>
 
-                const aqiValue = latestAQI ? Number(latestAQI.aqi) : 0;
+              {/* Mobile Header */}
+              <div className="lg:hidden px-4 py-3 bg-gray-800 border-b border-gray-700 mb-1">
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                  Tracked Locations ({trackedData.trackedLocation.length})
+                </h3>
+              </div>
 
-                return (
-                  <Card
-                    key={location._id}
-                    locationName={location.name || "Unknown Location"}
-                    latestAQI={latestAQI}
-                    aqiValue={aqiValue}
-                    aqiHistoryLength={location.aqiHistory.length}
-                    location={location}
-                    setSelectedLocation={setSelectedLocation}
-                  />
-                );
-              })}
-            </div>
+              <div className="flex flex-col">
+                {trackedData.trackedLocation.map((location, index) => {
+                  return (
+                    <Card
+                      key={location._id}
+                      index={index}
+                      locationName={location.name}
+                      latestAQI={
+                        location.aqiHistory[location.aqiHistory.length - 1]
+                      }
+                      aqiValue={parseInt(
+                        location.aqiHistory[location.aqiHistory.length - 1]
+                          ?.aqi || "0",
+                      )}
+                      aqiHistoryLength={location.aqiHistory.length}
+                      location={location}
+                      setSelectedLocation={setSelectedLocation}
+                      onUntrack={handleUntrack}
+                    />
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <div className="bg-gray-800 rounded-lg p-12 text-center">
               <FaMapMarkerAlt className="w-16 h-16 text-gray-600 mx-auto mb-4" />
